@@ -1,6 +1,16 @@
 import numpy as np
 
-def readData(filepath: str) -> np.ndarray:
+class Task:
+    def __init__(self, id, r, p, q) -> None:
+        self.id = id
+        self.r = r
+        self.p = p
+        self.q = q
+    
+    def __repr__(self):
+        return f"{self.id} {self.r} {self.p} {self.q}"
+
+def readData(filepath: str):
     """
         Read data from a ".txt" file and return an indexed array.
         
@@ -22,29 +32,92 @@ def readData(filepath: str) -> np.ndarray:
     # get number of elements from data - first line of the file
     nItems = int(data[0][0])
     data = np.asarray(data[1:], dtype=np.int64) # convert str to int
-    indexes = np.arange(0, nItems).reshape(nItems, 1)
-    data = np.hstack((indexes, data))
+    indices = np.arange(0, nItems).reshape(nItems, 1)
+    data = np.hstack((indices, data))
+    items = []
+    for d in data:
+        items.append(Task(d[0], d[1], d[2], d[3]))
     
-    return data
+    return items
 
-def getCmax(data):
-    # initial state
+def getCmax(data: np.ndarray) -> int:
+    """
+        Calculate the total amount of time `C_max` needed to complete the tasks.
+        
+        Parameters:
+        - `data: np.ndarray` - data array
+        
+        Returns:
+        - `int` - total amount of time needed
+    """
     t, cmax = 0, 0
 
     for i in range(len(data)):
-        _, r, p, q = data[i]
+        r, p, q = (data[i].r, data[i].p, data[i].q)
         s = max(t, r)
         t = s + p
         cmax = max(cmax, t + q)
     
-    print(cmax)
+    return cmax
+
+def sortR(data):
+    d = data.copy()
+    d.sort(key=lambda x: x.r)
+    return d
+
+def Schrage(data):
+    dataR = sortR(data)
+    ready = []
+    t = 0
+    order = []
+    
+    while dataR or ready:
+        while dataR and dataR[0].r <= t:
+            ready.append(dataR.pop(0))
+
+        if not ready:
+            t = dataR[0].r
+            continue
+
+        max_q_task = max(ready, key=lambda x: x.q)
+        ready.remove(max_q_task)
+        order.append(max_q_task.id)
+
+
+        t += max_q_task.p
+    
+    return order
+
+def permutations(data):
+    data = data.copy()
+    schrageOrder = Schrage(data)
+    data = np.asarray(data.copy())
+    data = data[schrageOrder]
+    
+    # permutations
+    cmax = getCmax(data)
+
+    N = len(data)
+    for i in range(N):
+        for k in range(N-i):
+            data[i], data[i+k] = data[i+k], data[i]
+            newCmax = getCmax(data)
+            if (newCmax < cmax):
+                cmax = newCmax
+            else:
+                data[i], data[i+k] = data[i+k], data[i]
+    
+    return data
 
 def main():
     filepath = "data/data4.txt"
     data = readData(filepath)
-    print(data)
-    getCmax(data)
- 
+    data = permutations(data)
+
+    print(getCmax(data))
+    # for item in data:
+    #     print(item)
+
 
 if __name__ == "__main__":
     main()

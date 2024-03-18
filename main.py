@@ -86,15 +86,21 @@ def Schrage(data):
     return order
 
 def permutations(data):
+    # perform Schrage algorithm on the data
     data = data.copy()
     schrageOrder = Schrage(data)
     data = np.asarray(data.copy())
     data = data[schrageOrder]
     
-    # permutations
+    # get initial Cmax value
     cmax = getCmax(data)
 
+    # number of tasks in dataset
     N = len(data)
+    # for every task `i` in dataset
+    # swap it with task `k` and get `newCmax`
+    # if `newCmax < cmax` -> keep the changes and update `cmax` value
+    # else swap tasks back
     for i in range(N):
         for k in range(N):
             data[i], data[k] = data[k], data[i]
@@ -120,7 +126,7 @@ def testSolution():
         cmax = getCmax(data)
         CmaxSUM += cmax
         print(f"Cmax_{i+1} = {cmax}, Time_{i+1} = {end - start:.5} s")
-
+        
     print(f"Total Cmax = {CmaxSUM}")
                 
 def main():

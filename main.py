@@ -1,3 +1,4 @@
+import time
 import numpy as np
 
 class Task:
@@ -18,11 +19,7 @@ def readData(filepath: str):
         - `filepath: str` - path to the data file
         
         Returns:
-        - `np.ndarray` - an indexed array where every element consists of:
-        `[0]` - element's index
-        `[1]` - R
-        `[2]` - P
-        `[3]` - Q
+        - array of `Task` objects
     """
     with open(filepath) as file:
         data = file.readlines()
@@ -79,7 +76,7 @@ def Schrage(data):
             t = dataR[0].r
             continue
 
-        max_q_task = max(ready, key=lambda x: x.q)
+        max_q_task = max(ready, key=lambda x: x.q+x.p)
         ready.remove(max_q_task)
         order.append(max_q_task.id)
 
@@ -99,24 +96,38 @@ def permutations(data):
 
     N = len(data)
     for i in range(N):
-        for k in range(N-i):
-            data[i], data[i+k] = data[i+k], data[i]
+        for k in range(N):
+            data[i], data[k] = data[k], data[i]
             newCmax = getCmax(data)
             if (newCmax < cmax):
                 cmax = newCmax
             else:
-                data[i], data[i+k] = data[i+k], data[i]
+                data[i], data[k] = data[k], data[i]
     
     return data
 
-def main():
-    filepath = "data/data4.txt"
-    data = readData(filepath)
-    data = permutations(data)
+def testSolution():
+    rootpath = "data/"
+    filenames = ["data1.txt", "data2.txt",
+                 "data3.txt", "data4.txt"]
+    
+    CmaxSUM = 0
+    for i, name in enumerate(filenames):
+        data = readData(rootpath+name)
+        start = time.time()
+        data = permutations(data)
+        end = time.time()
+        cmax = getCmax(data)
+        CmaxSUM += cmax
+        print(f"Cmax_{i+1} = {cmax}, Time_{i+1} = {end - start:.5} s")
 
-    print(getCmax(data))
-    # for item in data:
-    #     print(item)
+    print(f"Total Cmax = {CmaxSUM}")
+                
+def main():
+    start = time.time()
+    testSolution()
+    end = time.time()
+    print(f"Total time: {end - start:.5} s")
 
 
 if __name__ == "__main__":

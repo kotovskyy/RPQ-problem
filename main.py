@@ -128,6 +128,13 @@ def testSolution():
         print(f"Cmax_{i+1} = {cmax}, Time_{i+1} = {end - start:.5} s")
         
     print(f"Total Cmax = {CmaxSUM}")
+
+def testSingleFile(filename):
+    data = readData(filename)
+    data = permutations(data)
+    order = [str(x.id+1) for x in data]
+    print(" ".join(order))
+    print(f"CMAX = {getCmax(data)}")
                 
 def main():
     start = time.time()
@@ -138,3 +145,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
